@@ -6,6 +6,7 @@ import { AppLayout, ProtectedRoute } from "@/layouts";
 // Pages
 import LandingPage from "@/pages/LandingPage";
 import RoleSelection from "@/pages/auth/RoleSelection";
+import StudentDashboard from "@/pages/student/StudentDashboard";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -26,11 +27,7 @@ export default function AppRoutes() {
             // Student routes
             {
               path: "/student",
-              element: (
-                <div className="mx-auto max-w-5xl">
-                  Student Dashboard (coming soon)
-                </div>
-              ),
+              element: <StudentDashboard />,
             },
             {
               path: "/student/find",

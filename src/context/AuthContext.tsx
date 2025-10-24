@@ -59,8 +59,8 @@ const authStorage = new AuthStorage();
 
 const MOCK_USER: User = {
   id: "mock-user",
-  name: "Alex Nguyen",
-  email: "alex.nguyen@hcmut.edu.vn",
+  name: "Nguyen Van A",
+  email: "a.nguyen@hcmut.edu.vn",
   roles: ["student", "tutor"],
 };
 

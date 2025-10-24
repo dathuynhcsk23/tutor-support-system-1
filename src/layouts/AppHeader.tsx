@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import Logo from "@/components/Logo";
 
 /**
  * Navigation items for each role
@@ -56,12 +57,7 @@ export default function AppHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         {/* Logo */}
-        <NavLink
-          to={activeRole ? `/${activeRole}` : "/"}
-          className="text-lg font-bold text-primary"
-        >
-          TSS
-        </NavLink>
+        <Logo to={activeRole ? `/${activeRole}` : "/"} />
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
