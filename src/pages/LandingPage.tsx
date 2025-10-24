@@ -12,7 +12,8 @@ import { ArrowRight, Clock, GraduationCap, Target } from "lucide-react";
 const FEATURES = [
   {
     title: "Get help fast",
-    description: "Connect with experienced tutors and find open sessions quickly.",
+    description:
+      "Connect with experienced tutors and find open sessions quickly.",
     icon: Clock,
   },
   {
@@ -22,7 +23,8 @@ const FEATURES = [
   },
   {
     title: "Track progress",
-    description: "Session notes keep you aligned on goals every step of the way.",
+    description:
+      "Session notes keep you aligned on goals every step of the way.",
     icon: Target,
   },
 ];
@@ -66,7 +68,8 @@ export default function LandingPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold">Program Benefits</h2>
             <p className="text-muted-foreground">
-              Built for flexibility, accountability, and an excellent student experience.
+              Built for flexibility, accountability, and an excellent student
+              experience.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -121,7 +124,10 @@ export default function LandingPage() {
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>
                 Email:{" "}
-                <a href="mailto:support@hcmut.edu.vn" className="text-primary underline">
+                <a
+                  href="mailto:support@hcmut.edu.vn"
+                  className="text-primary underline"
+                >
                   support@hcmut.edu.vn
                 </a>
               </p>

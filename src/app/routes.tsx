@@ -1,6 +1,9 @@
 import { useRoutes, Navigate } from "react-router-dom";
 
-// Pages (we'll create these next)
+// Layouts
+import { AppLayout, ProtectedRoute } from "@/layouts";
+
+// Pages
 import LandingPage from "@/pages/LandingPage";
 import RoleSelection from "@/pages/auth/RoleSelection";
 
@@ -8,15 +11,105 @@ export default function AppRoutes() {
   return useRoutes([
     // Public routes
     { path: "/", element: <LandingPage /> },
-    { path: "/role", element: <RoleSelection /> },
 
-    // Student routes (placeholder for now)
-    { path: "/student", element: <div>Student Dashboard (coming soon)</div> },
-    { path: "/student/*", element: <div>Student Page (coming soon)</div> },
+    // Protected routes (require authentication)
+    {
+      element: <ProtectedRoute />,
+      children: [
+        // Role selection (no app layout yet)
+        { path: "/role", element: <RoleSelection /> },
 
-    // Tutor routes (placeholder for now)
-    { path: "/tutor", element: <div>Tutor Dashboard (coming soon)</div> },
-    { path: "/tutor/*", element: <div>Tutor Page (coming soon)</div> },
+        // App routes with header/navigation
+        {
+          element: <AppLayout />,
+          children: [
+            // Student routes
+            {
+              path: "/student",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Student Dashboard (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/student/find",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Find a Tutor (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/student/auto-match",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Auto-match (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/student/schedule",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  My Schedule (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/student/library",
+              element: (
+                <div className="mx-auto max-w-5xl">Library (coming soon)</div>
+              ),
+            },
+            {
+              path: "/student/profile",
+              element: (
+                <div className="mx-auto max-w-5xl">Profile (coming soon)</div>
+              ),
+            },
+
+            // Tutor routes
+            {
+              path: "/tutor",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Tutor Dashboard (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/tutor/schedule",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Tutor Schedule (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/tutor/availability",
+              element: (
+                <div className="mx-auto max-w-5xl">
+                  Availability (coming soon)
+                </div>
+              ),
+            },
+            {
+              path: "/tutor/library",
+              element: (
+                <div className="mx-auto max-w-5xl">Library (coming soon)</div>
+              ),
+            },
+            {
+              path: "/tutor/profile",
+              element: (
+                <div className="mx-auto max-w-5xl">Profile (coming soon)</div>
+              ),
+            },
+          ],
+        },
+      ],
+    },
 
     // Catch-all redirect
     { path: "*", element: <Navigate to="/" replace /> },

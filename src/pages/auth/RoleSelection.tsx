@@ -17,7 +17,10 @@ import type { Role } from "@/types/auth";
 /**
  * Role configuration with display info
  */
-const ROLES: Record<Role, { title: string; description: string; icon: typeof GraduationCap }> = {
+const ROLES: Record<
+  Role,
+  { title: string; description: string; icon: typeof GraduationCap }
+> = {
   student: {
     title: "Student",
     description: "Find tutors, book sessions, and track your progress.",
@@ -89,10 +92,7 @@ export default function RoleSelection() {
                 <CardDescription>{config.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button
-                  className="w-full"
-                  onClick={() => selectRole(role)}
-                >
+                <Button className="w-full" onClick={() => selectRole(role)}>
                   Continue as {config.title}
                 </Button>
               </CardContent>
