@@ -8,6 +8,7 @@ import LandingPage from "@/pages/LandingPage";
 import RoleSelection from "@/pages/auth/RoleSelection";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import FindTutor from "@/pages/student/FindTutor";
+import ScheduleSession from "@/pages/student/ScheduleSession";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -33,6 +34,10 @@ export default function AppRoutes() {
             {
               path: "/student/find",
               element: <FindTutor />,
+            },
+            {
+              path: "/student/schedule/new",
+              element: <ScheduleSession />,
             },
             {
               path: "/student/auto-match",
