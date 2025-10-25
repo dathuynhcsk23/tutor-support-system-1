@@ -9,6 +9,7 @@ import RoleSelection from "@/pages/auth/RoleSelection";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import FindTutor from "@/pages/student/FindTutor";
 import ScheduleSession from "@/pages/student/ScheduleSession";
+import MySchedule from "@/pages/student/MySchedule";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -49,11 +50,7 @@ export default function AppRoutes() {
             },
             {
               path: "/student/schedule",
-              element: (
-                <div className="mx-auto max-w-5xl">
-                  My Schedule (coming soon)
-                </div>
-              ),
+              element: <MySchedule />,
             },
             {
               path: "/student/library",
