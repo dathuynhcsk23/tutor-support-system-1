@@ -1,5 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Calendar, MessageCircle, Search, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  MessageCircle,
+  Search,
+  Sparkles,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,16 +17,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import { getNextSession, getSessionsNeedingFeedback } from "@/data/mockSessions";
+import { sessionRepository } from "@/models";
+// Import to ensure mock data is loaded
+import "@/data/mockSessions";
 import { formatDateTimeRelative, formatTimeRange } from "@/lib/date";
-import { getModalityLabel, getStatusLabel, getStatusVariant } from "@/types/session";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const nextSession = getNextSession();
-  const feedbackSessions = getSessionsNeedingFeedback().slice(0, 3);
+  // Use repository methods - for now using student-1 as mock user
+  const nextSession = sessionRepository.getNextSessionForStudent("student-1");
+  const feedbackSessions = sessionRepository
+    .getSessionsNeedingFeedback("student-1")
+    .slice(0, 3);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -56,11 +66,11 @@ export default function StudentDashboard() {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant={getStatusVariant(nextSession.status)}>
-                    {getStatusLabel(nextSession.status)}
+                  <Badge variant={nextSession.getStatusVariant()}>
+                    {nextSession.getStatusLabel()}
                   </Badge>
                   <Badge variant="outline">
-                    {getModalityLabel(nextSession.modality)}
+                    {nextSession.getModalityLabel()}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -103,7 +113,10 @@ export default function StudentDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <Button onClick={() => navigate("/student/find")} className="justify-start">
+            <Button
+              onClick={() => navigate("/student/find")}
+              className="justify-start"
+            >
               <Search className="mr-2 h-4 w-4" />
               Find a Tutor
             </Button>
@@ -154,7 +167,8 @@ export default function StudentDashboard() {
                       {session.courseCode} · {session.courseName}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDateTimeRelative(session.startTime)} with {session.tutorName}
+                      {formatDateTimeRelative(session.startTime)} with{" "}
+                      {session.tutorName}
                     </p>
                   </div>
                   <Button
@@ -170,7 +184,8 @@ export default function StudentDashboard() {
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No feedback tasks right now. We'll nudge you when something needs attention.
+              No feedback tasks right now. We'll nudge you when something needs
+              attention.
             </p>
           )}
         </CardContent>

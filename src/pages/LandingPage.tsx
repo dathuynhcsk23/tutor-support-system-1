@@ -15,7 +15,14 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/Logo";
-import { ArrowRight, Clock, GraduationCap, LogIn, Menu, Target } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  GraduationCap,
+  LogIn,
+  Menu,
+  Target,
+} from "lucide-react";
 import bannerImage from "@/assets/banner_image_light.jpg";
 
 const FEATURES = [
@@ -113,7 +120,11 @@ export default function LandingPage() {
                         {link.label}
                       </a>
                     ))}
-                    <Button onClick={() => signIn()} disabled={loading} className="mt-4">
+                    <Button
+                      onClick={() => signIn()}
+                      disabled={loading}
+                      className="mt-4"
+                    >
                       <LogIn className="mr-2 h-4 w-4" />
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
@@ -152,11 +163,17 @@ export default function LandingPage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <div className="flex items-center gap-4 text-sm text-white/80">
-              <a href="#program" className="hover:text-white underline-offset-4 hover:underline">
+              <a
+                href="#program"
+                className="hover:text-white underline-offset-4 hover:underline"
+              >
                 Program Info
               </a>
               <span className="text-white/40">|</span>
-              <a href="#how" className="hover:text-white underline-offset-4 hover:underline">
+              <a
+                href="#how"
+                className="hover:text-white underline-offset-4 hover:underline"
+              >
                 How It Works
               </a>
             </div>

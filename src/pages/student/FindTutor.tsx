@@ -21,15 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TutorProfileDialog } from "@/components/TutorProfileDialog";
 import {
-  searchTutors,
-  getDepartments,
-  getSubjects,
-  type TutorFilters,
-} from "@/data/mockTutors";
-import type { Tutor } from "@/types/tutor";
+  tutorRepository,
+  type Tutor,
+  type TutorFilterCriteria,
+} from "@/models";
+// Import to ensure mock data is loaded
+import "@/data/mockTutors";
 
-const initialFilters: TutorFilters = {
+const initialFilters: TutorFilterCriteria = {
   query: "",
   department: "",
   subject: "",
@@ -38,16 +39,24 @@ const initialFilters: TutorFilters = {
 
 export default function FindTutor() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<TutorFilters>(initialFilters);
+  const [filters, setFilters] = useState<TutorFilterCriteria>(initialFilters);
+  const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Get filter options
-  const departments = useMemo(() => getDepartments(), []);
-  const subjects = useMemo(() => getSubjects(), []);
+  // Get filter options from repository
+  const departments = useMemo(() => tutorRepository.getDepartments(), []);
+  const subjects = useMemo(() => tutorRepository.getSubjects(), []);
 
-  // Filter tutors based on current filters
-  const tutors = useMemo(() => searchTutors(filters), [filters]);
+  // Filter tutors using repository search
+  const tutors = useMemo(() => tutorRepository.search(filters), [filters]);
 
   const handleSelectTutor = (tutor: Tutor) => {
+    setSelectedTutor(tutor);
+    setDialogOpen(true);
+  };
+
+  const handleBookSession = (tutor: Tutor) => {
+    setDialogOpen(false);
     // Navigate to schedule page with tutor pre-selected
     navigate(`/student/schedule/new?tutorId=${tutor.id}`);
   };
@@ -92,7 +101,7 @@ export default function FindTutor() {
                   id="search"
                   placeholder="Name or subject..."
                   className="pl-9"
-                  value={filters.query}
+                  value={filters.query || ""}
                   onChange={(e) =>
                     setFilters((f) => ({ ...f, query: e.target.value }))
                   }
@@ -104,9 +113,12 @@ export default function FindTutor() {
             <div className="space-y-2">
               <Label>Department</Label>
               <Select
-                value={filters.department}
+                value={filters.department || "all"}
                 onValueChange={(value) =>
-                  setFilters((f) => ({ ...f, department: value === "all" ? "" : value }))
+                  setFilters((f) => ({
+                    ...f,
+                    department: value === "all" ? "" : value,
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -127,9 +139,12 @@ export default function FindTutor() {
             <div className="space-y-2">
               <Label>Subject</Label>
               <Select
-                value={filters.subject}
+                value={filters.subject || "all"}
                 onValueChange={(value) =>
-                  setFilters((f) => ({ ...f, subject: value === "all" ? "" : value }))
+                  setFilters((f) => ({
+                    ...f,
+                    subject: value === "all" ? "" : value,
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -150,11 +165,11 @@ export default function FindTutor() {
             <div className="space-y-2">
               <Label>Modality</Label>
               <Select
-                value={filters.modality}
+                value={filters.modality || "all"}
                 onValueChange={(value) =>
                   setFilters((f) => ({
                     ...f,
-                    modality: value as TutorFilters["modality"],
+                    modality: value as TutorFilterCriteria["modality"],
                   }))
                 }
               >
@@ -208,6 +223,14 @@ export default function FindTutor() {
           </Button>
         </Card>
       )}
+
+      {/* Tutor Profile Dialog */}
+      <TutorProfileDialog
+        tutor={selectedTutor}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onBookSession={handleBookSession}
+      />
     </section>
   );
 }
@@ -222,25 +245,20 @@ interface TutorCardProps {
 }
 
 function TutorCard({ tutor, onSelect }: TutorCardProps) {
-  const initials = tutor.name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
   return (
     <Card className="flex h-full flex-col transition hover:border-primary/60">
       <CardHeader className="flex flex-row items-start gap-4">
         <Avatar className="h-12 w-12">
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-primary">
+            {tutor.getInitials()}
+          </AvatarFallback>
         </Avatar>
         <div className="space-y-1">
           <CardTitle className="text-lg">{tutor.name}</CardTitle>
           <p className="text-sm text-muted-foreground">{tutor.department}</p>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
             <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-            {tutor.rating.toFixed(1)} · {tutor.totalSessions} sessions
+            {tutor.getFormattedRating()} · {tutor.totalSessions} sessions
           </p>
         </div>
       </CardHeader>
@@ -253,14 +271,16 @@ function TutorCard({ tutor, onSelect }: TutorCardProps) {
             </Badge>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">{tutor.bio}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {tutor.bio}
+        </p>
         <div className="flex gap-1">
-          {tutor.modalities.includes("online") && (
+          {tutor.hasModality("online") && (
             <Badge variant="outline" className="text-xs">
               Online
             </Badge>
           )}
-          {tutor.modalities.includes("in_person") && (
+          {tutor.hasModality("in_person") && (
             <Badge variant="outline" className="text-xs">
               In-Person
             </Badge>
@@ -270,7 +290,7 @@ function TutorCard({ tutor, onSelect }: TutorCardProps) {
 
       <CardFooter>
         <Button className="w-full" onClick={() => onSelect(tutor)}>
-          Select Tutor
+          View Profile
         </Button>
       </CardFooter>
     </Card>

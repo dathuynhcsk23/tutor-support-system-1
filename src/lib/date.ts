@@ -27,15 +27,15 @@ export function formatTimeRange(start: Date, end: Date): string {
  */
 export function formatDateTimeRelative(date: Date): string {
   const time = formatTime(date);
-  
+
   if (isToday(date)) {
     return `Today at ${time}`;
   }
-  
+
   if (isTomorrow(date)) {
     return `Tomorrow at ${time}`;
   }
-  
+
   return `${format(date, "EEE, MMM d")} at ${time}`;
 }
 

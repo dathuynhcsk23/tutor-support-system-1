@@ -1,4 +1,4 @@
-import type { Session } from "@/types/session";
+import { sessionRepository, type SessionData } from "@/models";
 
 /**
  * Helper to create dates relative to now
@@ -6,12 +6,6 @@ import type { Session } from "@/types/session";
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
-  return result;
-}
-
-function addHours(date: Date, hours: number): Date {
-  const result = new Date(date);
-  result.setHours(result.getHours() + hours);
   return result;
 }
 
@@ -25,9 +19,9 @@ const now = new Date();
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
 /**
- * Mock sessions data
+ * Raw session data - used to initialize the SessionRepository
  */
-export const MOCK_SESSIONS: Session[] = [
+const SESSIONS_DATA: SessionData[] = [
   // Upcoming session - tomorrow at 10am
   {
     id: "session-1",
@@ -107,32 +101,36 @@ export const MOCK_SESSIONS: Session[] = [
 ];
 
 /**
- * Get sessions for the current user (mock: returns all sessions)
+ * Initialize the session repository with mock data
+ * Call this at app startup
  */
-export function getMySessions(): Session[] {
-  return [...MOCK_SESSIONS];
+export function initializeSessionData(): void {
+  sessionRepository.initialize(SESSIONS_DATA);
 }
+
+// Initialize immediately when this module is imported
+initializeSessionData();
+
+// Re-export repository for convenience
+export { sessionRepository };
 
 /**
  * Get upcoming sessions
  */
-export function getUpcomingSessions(): Session[] {
-  return MOCK_SESSIONS.filter(s => s.status === "upcoming" || s.status === "active")
-    .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+export function getUpcomingSessions() {
+  return sessionRepository.getUpcomingForStudent("student-1");
 }
 
 /**
  * Get next upcoming session
  */
-export function getNextSession(): Session | null {
-  const upcoming = getUpcomingSessions();
-  return upcoming.length > 0 ? upcoming[0] : null;
+export function getNextSession() {
+  return sessionRepository.getNextSessionForStudent("student-1");
 }
 
 /**
  * Get sessions needing feedback
  */
-export function getSessionsNeedingFeedback(): Session[] {
-  return MOCK_SESSIONS.filter(s => s.status === "completed" && !s.feedbackSubmitted)
-    .sort((a, b) => b.endTime.getTime() - a.endTime.getTime());
+export function getSessionsNeedingFeedback() {
+  return sessionRepository.getSessionsNeedingFeedback("student-1");
 }

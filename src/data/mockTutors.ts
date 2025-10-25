@@ -1,9 +1,12 @@
-import type { Tutor } from "@/types/tutor";
+import { tutorRepository, type TutorData } from "@/models";
 
 /**
- * Mock tutors data - Vietnamese student tutors
+ * Raw tutor data - Vietnamese student tutors at HCMUT
+ *
+ * This data is used to initialize the TutorRepository.
+ * The actual Tutor class instances are created by the repository.
  */
-export const MOCK_TUTORS: Tutor[] = [
+const TUTORS_DATA: TutorData[] = [
   {
     id: "tutor-1",
     name: "Tran Minh Khoa",
@@ -73,66 +76,30 @@ export const MOCK_TUTORS: Tutor[] = [
 ];
 
 /**
- * Filter options for tutor search
+ * Initialize the tutor repository with mock data
+ * Call this at app startup
  */
-export interface TutorFilters {
-  query: string;
-  department: string;
-  subject: string;
-  modality: "all" | "online" | "in_person";
+export function initializeTutorData(): void {
+  tutorRepository.initialize(TUTORS_DATA);
 }
 
-/**
- * Search tutors with filters
- */
-export function searchTutors(filters: TutorFilters): Tutor[] {
-  return MOCK_TUTORS.filter((tutor) => {
-    // Filter by search query (name or subject)
-    if (filters.query) {
-      const q = filters.query.toLowerCase();
-      const matchesName = tutor.name.toLowerCase().includes(q);
-      const matchesSubject = tutor.subjects.some((s) =>
-        s.toLowerCase().includes(q)
-      );
-      if (!matchesName && !matchesSubject) return false;
-    }
+// Initialize immediately when this module is imported
+initializeTutorData();
 
-    // Filter by department
-    if (filters.department && tutor.department !== filters.department) {
-      return false;
-    }
-
-    // Filter by subject
-    if (filters.subject && !tutor.subjects.includes(filters.subject)) {
-      return false;
-    }
-
-    // Filter by modality
-    if (filters.modality !== "all" && !tutor.modalities.includes(filters.modality)) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
-/**
- * Get a tutor by ID
- */
-export function getTutorById(id: string): Tutor | undefined {
-  return MOCK_TUTORS.find((t) => t.id === id);
-}
+// Re-export repository and types for convenience
+export { tutorRepository };
+export type { TutorFilterCriteria } from "@/models";
 
 /**
  * Get unique departments from tutors
  */
 export function getDepartments(): string[] {
-  return [...new Set(MOCK_TUTORS.map((t) => t.department))];
+  return tutorRepository.getDepartments();
 }
 
 /**
  * Get unique subjects from tutors
  */
 export function getSubjects(): string[] {
-  return [...new Set(MOCK_TUTORS.flatMap((t) => t.subjects))];
+  return tutorRepository.getSubjects();
 }

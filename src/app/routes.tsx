@@ -7,6 +7,7 @@ import { AppLayout, ProtectedRoute } from "@/layouts";
 import LandingPage from "@/pages/LandingPage";
 import RoleSelection from "@/pages/auth/RoleSelection";
 import StudentDashboard from "@/pages/student/StudentDashboard";
+import FindTutor from "@/pages/student/FindTutor";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -31,11 +32,7 @@ export default function AppRoutes() {
             },
             {
               path: "/student/find",
-              element: (
-                <div className="mx-auto max-w-5xl">
-                  Find a Tutor (coming soon)
-                </div>
-              ),
+              element: <FindTutor />,
             },
             {
               path: "/student/auto-match",

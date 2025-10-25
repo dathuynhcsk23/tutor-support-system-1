@@ -11,7 +11,11 @@ interface LogoProps {
 /**
  * Application logo component with optional text
  */
-export default function Logo({ className, to = "/", showText = true }: LogoProps) {
+export default function Logo({
+  className,
+  to = "/",
+  showText = true,
+}: LogoProps) {
   return (
     <Link
       to={to}
@@ -20,11 +24,7 @@ export default function Logo({ className, to = "/", showText = true }: LogoProps
         className
       )}
     >
-      <img
-        src={logoImage}
-        alt="HCMUT Logo"
-        className="h-10 w-auto"
-      />
+      <img src={logoImage} alt="HCMUT Logo" className="h-10 w-auto" />
       {showText && <span className="text-lg">TSS</span>}
     </Link>
   );

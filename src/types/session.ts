@@ -6,7 +6,12 @@ export type SessionModality = "online" | "in_person";
 /**
  * Session status
  */
-export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled" | "no_show";
+export type SessionStatus =
+  | "upcoming"
+  | "active"
+  | "completed"
+  | "cancelled"
+  | "no_show";
 
 /**
  * Session model - represents a tutoring session
@@ -23,8 +28,8 @@ export interface Session {
   status: SessionStatus;
   startTime: Date;
   endTime: Date;
-  location?: string;        // For in-person
-  meetingUrl?: string;      // For online
+  location?: string; // For in-person
+  meetingUrl?: string; // For online
   notes?: string;
   feedbackSubmitted?: boolean;
 }
@@ -53,7 +58,9 @@ export function getStatusLabel(status: SessionStatus): string {
 /**
  * Helper to get badge variant for status
  */
-export function getStatusVariant(status: SessionStatus): "default" | "secondary" | "destructive" | "outline" {
+export function getStatusVariant(
+  status: SessionStatus
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "active":
       return "default";
