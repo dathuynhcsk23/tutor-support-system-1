@@ -45,6 +45,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SessionDetailsDrawer } from "@/components/SessionDetailsDrawer";
 import { sessionRepository, type Session } from "@/models";
 import { formatDate, formatTimeRange, formatTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,26 @@ export default function MySchedule() {
 
   // Calendar month navigation
   const [calendarMonth, setCalendarMonth] = useState(() => new Date());
+
+  // Session details drawer state
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Handlers
+  const handleSessionClick = (session: Session) => {
+    setSelectedSession(session);
+    setDrawerOpen(true);
+  };
+
+  const handleReschedule = (session: Session) => {
+    // TODO: Implement reschedule dialog
+    console.log("Reschedule session:", session.id);
+  };
+
+  const handleCancel = (session: Session) => {
+    // TODO: Implement cancel dialog
+    console.log("Cancel session:", session.id);
+  };
 
   // Get all sessions from repository
   const allSessions = useMemo(
@@ -288,7 +309,10 @@ export default function MySchedule() {
       {/* Content */}
       {viewMode === "list" ? (
         filteredSessions.length > 0 ? (
-          <SessionTable sessions={filteredSessions} />
+          <SessionTable
+            sessions={filteredSessions}
+            onSessionClick={handleSessionClick}
+          />
         ) : (
           <EmptyState type={statusFilter} />
         )
@@ -297,8 +321,18 @@ export default function MySchedule() {
           sessions={filteredSessions}
           month={calendarMonth}
           onMonthChange={setCalendarMonth}
+          onSessionClick={handleSessionClick}
         />
       )}
+
+      {/* Session Details Drawer */}
+      <SessionDetailsDrawer
+        session={selectedSession}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onReschedule={handleReschedule}
+        onCancel={handleCancel}
+      />
     </section>
   );
 }
@@ -309,9 +343,10 @@ export default function MySchedule() {
 
 interface SessionTableProps {
   sessions: Session[];
+  onSessionClick: (session: Session) => void;
 }
 
-function SessionTable({ sessions }: SessionTableProps) {
+function SessionTable({ sessions, onSessionClick }: SessionTableProps) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -327,7 +362,11 @@ function SessionTable({ sessions }: SessionTableProps) {
         </TableHeader>
         <TableBody>
           {sessions.map((session) => (
-            <SessionRow key={session.id} session={session} />
+            <SessionRow
+              key={session.id}
+              session={session}
+              onClick={() => onSessionClick(session)}
+            />
           ))}
         </TableBody>
       </Table>
@@ -341,11 +380,12 @@ function SessionTable({ sessions }: SessionTableProps) {
 
 interface SessionRowProps {
   session: Session;
+  onClick: () => void;
 }
 
-function SessionRow({ session }: SessionRowProps) {
+function SessionRow({ session, onClick }: SessionRowProps) {
   return (
-    <TableRow className="cursor-pointer hover:bg-muted/50">
+    <TableRow className="cursor-pointer hover:bg-muted/50" onClick={onClick}>
       <TableCell>
         <div>
           <p className="font-medium">{session.courseCode}</p>
@@ -385,24 +425,16 @@ function SessionRow({ session }: SessionRowProps) {
         </Badge>
       </TableCell>
       <TableCell className="text-right">
-        {session.isUpcoming() && (
-          <Button size="sm" variant="outline">
-            Details
-          </Button>
-        )}
-        {session.needsFeedback() && (
-          <Button size="sm" variant="secondary" asChild>
-            <Link to={`/student/feedback/${session.id}`}>Give Feedback</Link>
-          </Button>
-        )}
-        {session.isCompleted() && session.feedbackSubmitted && (
-          <Button size="sm" variant="ghost" disabled>
-            Completed
-          </Button>
-        )}
-        {session.isCancelled() && (
-          <span className="text-sm text-muted-foreground">Cancelled</span>
-        )}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+        >
+          View Details
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -416,6 +448,7 @@ interface SessionCalendarProps {
   sessions: Session[];
   month: Date;
   onMonthChange: (month: Date) => void;
+  onSessionClick: (session: Session) => void;
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -425,6 +458,7 @@ function SessionCalendar({
   sessions,
   month,
   onMonthChange,
+  onSessionClick,
 }: SessionCalendarProps) {
   // Generate calendar grid starting from Monday
   const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
@@ -516,6 +550,7 @@ function SessionCalendar({
                   {daySessions.slice(0, 3).map((session) => (
                     <button
                       key={session.id}
+                      onClick={() => onSessionClick(session)}
                       className={cn(
                         "w-full rounded px-1.5 py-0.5 text-left text-xs transition hover:opacity-80",
                         session.isOnline()
