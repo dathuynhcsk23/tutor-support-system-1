@@ -30,7 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { tutorRepository, type Tutor } from "@/models";
+import { tutorRepository, sessionRepository, type Tutor } from "@/models";
+import type { SessionData } from "@/models/Session";
 import { cn } from "@/lib/utils";
 // Ensure mock data is loaded
 import "@/data/mockTutors";
@@ -138,8 +139,47 @@ export default function ScheduleSession() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // In a real app, this would create a session via API
-    // For now, just navigate to schedule page
+    // Parse the selected time slot
+    const timeSlot = TIME_SLOTS.find((slot) => slot.start === selectedTimeSlot);
+    if (!timeSlot || !selectedDate) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Create start and end times
+    const [startHour, startMin] = timeSlot.start.split(":").map(Number);
+    const [endHour, endMin] = timeSlot.end.split(":").map(Number);
+
+    const startTime = new Date(selectedDate);
+    startTime.setHours(startHour, startMin, 0, 0);
+
+    const endTime = new Date(selectedDate);
+    endTime.setHours(endHour, endMin, 0, 0);
+
+    // Create session data
+    const sessionData: SessionData = {
+      id: `session-${Date.now()}`, // Generate unique ID
+      tutorId: tutor.id,
+      tutorName: tutor.name,
+      studentId: "student-1", // Current user (hardcoded for now)
+      studentName: "Current Student",
+      courseCode: deriveCourseCode(selectedSubject),
+      courseName: selectedSubject,
+      modality: selectedModality,
+      status: "upcoming",
+      startTime,
+      endTime,
+      location: selectedModality === "in_person" ? "Room B4-201" : undefined,
+      meetingUrl:
+        selectedModality === "online"
+          ? "https://meet.google.com/abc-defg-hij"
+          : undefined,
+    };
+
+    // Add session to repository
+    sessionRepository.add(sessionData);
+
+    // Navigate to schedule page
     navigate("/student/schedule");
   };
 

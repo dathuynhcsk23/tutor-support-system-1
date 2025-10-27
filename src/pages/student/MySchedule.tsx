@@ -114,10 +114,9 @@ export default function MySchedule() {
   };
 
   // Get all sessions from repository
-  const allSessions = useMemo(
-    () => sessionRepository.findByStudentId("student-1"),
-    []
-  );
+  // Note: We fetch fresh on each render since repository is updated externally
+  // In a real app, this would use React Query or a state management library
+  const allSessions = sessionRepository.findByStudentId("student-1");
 
   // Apply filters
   const filteredSessions = useMemo(() => {
