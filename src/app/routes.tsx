@@ -10,6 +10,7 @@ import StudentDashboard from "@/pages/student/StudentDashboard";
 import FindTutor from "@/pages/student/FindTutor";
 import ScheduleSession from "@/pages/student/ScheduleSession";
 import MySchedule from "@/pages/student/MySchedule";
+import AutoMatch from "@/pages/student/AutoMatch";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -42,11 +43,7 @@ export default function AppRoutes() {
             },
             {
               path: "/student/auto-match",
-              element: (
-                <div className="mx-auto max-w-5xl">
-                  Auto-match (coming soon)
-                </div>
-              ),
+              element: <AutoMatch />,
             },
             {
               path: "/student/schedule",

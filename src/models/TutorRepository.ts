@@ -100,6 +100,37 @@ export class TutorRepository {
   }
 
   /**
+   * Auto-match tutors based on subject and modality preferences
+   * Returns best recommendation and alternatives sorted by rating
+   */
+  autoMatch(params: {
+    subject: string;
+    modality: "all" | "online" | "in_person";
+  }): { recommended: Tutor | null; alternates: Tutor[] } {
+    const { subject, modality } = params;
+
+    // Filter candidates by subject and modality
+    const candidates = this.findAll().filter((tutor) => {
+      const subjectMatch = !subject || tutor.teachesSubject(subject);
+      const modalityMatch = modality === "all" || tutor.hasModality(modality);
+      return subjectMatch && modalityMatch;
+    });
+
+    if (candidates.length === 0) {
+      return { recommended: null, alternates: [] };
+    }
+
+    // Sort by rating (highest first)
+    const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+
+    // First is recommended, next 3 are alternates
+    const [recommended, ...rest] = sorted;
+    const alternates = rest.slice(0, 3);
+
+    return { recommended, alternates };
+  }
+
+  /**
    * Get total count of tutors
    */
   count(): number {
