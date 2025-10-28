@@ -120,6 +120,24 @@ export class SessionRepository {
   }
 
   /**
+   * Get the next upcoming session for a tutor (soonest upcoming session)
+   */
+  getNextSessionForTutor(tutorId: string): Session | null {
+    const upcoming = this.getUpcomingForTutor(tutorId);
+    return upcoming.length > 0 ? upcoming[0] : null;
+  }
+
+  /**
+   * Get sessions that need wrap-up from tutor (attendance + notes)
+   * Only completed sessions that haven't been fully wrapped up
+   */
+  getSessionsNeedingWrapUp(tutorId: string): Session[] {
+    return this.findByTutorId(tutorId)
+      .filter((session) => session.needsWrapUp())
+      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+  }
+
+  /**
    * Get total count of sessions
    */
   count(): number {
