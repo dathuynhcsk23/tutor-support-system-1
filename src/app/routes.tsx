@@ -12,6 +12,7 @@ import ScheduleSession from "@/pages/student/ScheduleSession";
 import MySchedule from "@/pages/student/MySchedule";
 import AutoMatch from "@/pages/student/AutoMatch";
 import Library from "@/pages/student/Library";
+import Profile from "@/pages/student/Profile";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -56,9 +57,7 @@ export default function AppRoutes() {
             },
             {
               path: "/student/profile",
-              element: (
-                <div className="mx-auto max-w-5xl">Profile (coming soon)</div>
-              ),
+              element: <Profile />,
             },
 
             // Tutor routes
