@@ -2,6 +2,11 @@ import type { SessionModality, SessionStatus } from "@/types/session";
 import { isBefore, isAfter, addMinutes } from "date-fns";
 
 /**
+ * Attendance status for a session (from tutor's perspective)
+ */
+export type Attendance = "pending" | "present" | "absent";
+
+/**
  * Data required to construct a Session instance
  */
 export interface SessionData {
@@ -20,6 +25,10 @@ export interface SessionData {
   meetingUrl?: string;
   notes?: string;
   feedbackSubmitted?: boolean;
+  /** Attendance marked by tutor */
+  attendance?: Attendance;
+  /** Session notes written by tutor */
+  tutorNotes?: string;
 }
 
 /**
@@ -44,6 +53,8 @@ export class Session {
   readonly meetingUrl?: string;
   readonly notes?: string;
   private _feedbackSubmitted: boolean;
+  private _attendance: Attendance;
+  private _tutorNotes?: string;
 
   constructor(data: SessionData) {
     this.id = data.id;
@@ -61,6 +72,8 @@ export class Session {
     this.meetingUrl = data.meetingUrl;
     this.notes = data.notes;
     this._feedbackSubmitted = data.feedbackSubmitted ?? false;
+    this._attendance = data.attendance ?? "pending";
+    this._tutorNotes = data.tutorNotes;
   }
 
   // Getters
@@ -70,6 +83,14 @@ export class Session {
 
   get feedbackSubmitted(): boolean {
     return this._feedbackSubmitted;
+  }
+
+  get attendance(): Attendance {
+    return this._attendance;
+  }
+
+  get tutorNotes(): string | undefined {
+    return this._tutorNotes;
   }
 
   /**
@@ -111,6 +132,17 @@ export class Session {
    */
   needsFeedback(): boolean {
     return this.isCompleted() && !this._feedbackSubmitted;
+  }
+
+  /**
+   * Check if session needs wrap-up from tutor (attendance + notes)
+   * Only completed sessions that haven't been wrapped up
+   */
+  needsWrapUp(): boolean {
+    return (
+      this.isCompleted() &&
+      (this._attendance === "pending" || !this._tutorNotes)
+    );
   }
 
   /**
@@ -227,6 +259,8 @@ export class Session {
       meetingUrl: this.meetingUrl,
       notes: this.notes,
       feedbackSubmitted: this._feedbackSubmitted,
+      attendance: this._attendance,
+      tutorNotes: this._tutorNotes,
     };
   }
 }
