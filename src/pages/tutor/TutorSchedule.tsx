@@ -46,6 +46,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TutorSessionDetailsDrawer } from "@/components/TutorSessionDetailsDrawer";
 import { sessionRepository, type Session } from "@/models";
 import { formatDate, formatTimeRange, formatTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -100,15 +101,29 @@ export default function TutorSchedule() {
   // Calendar month navigation
   const [calendarMonth, setCalendarMonth] = useState(() => new Date());
 
-  // Session details drawer state - will be implemented later
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Session details drawer state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Handlers
   const handleSessionClick = (session: Session) => {
     setSelectedSession(session);
-    // TODO: Open tutor-specific session details drawer
-    console.log("Selected session:", session.id);
+    setDrawerOpen(true);
+  };
+
+  const handleCancel = (session: Session) => {
+    // TODO: Implement cancel dialog
+    console.log("Cancel session:", session.id);
+  };
+
+  const handleSaveWrapUp = (
+    session: Session,
+    data: { attendance: Record<string, string>; tutorNotes: string }
+  ) => {
+    // TODO: Persist to repository/API
+    console.log("Save wrap-up for session:", session.id, data);
+    // For now, just close and show success
+    setDrawerOpen(false);
   };
 
   // Get all sessions from repository for authenticated tutor
@@ -340,6 +355,15 @@ export default function TutorSchedule() {
           onSessionClick={handleSessionClick}
         />
       )}
+
+      {/* Session Details Drawer */}
+      <TutorSessionDetailsDrawer
+        session={selectedSession}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onCancel={handleCancel}
+        onSaveWrapUp={handleSaveWrapUp}
+      />
     </section>
   );
 }
