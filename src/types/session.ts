@@ -14,14 +14,14 @@ export type SessionStatus =
   | "no_show";
 
 /**
- * Session model - represents a tutoring session
+ * Session model interface - represents a tutoring session
+ * Note: Use the Session class from @/models for business logic.
+ * This interface is for type reference only.
  */
-export interface Session {
+export interface SessionInterface {
   id: string;
   tutorId: string;
-  tutorName: string;
-  studentId: string;
-  studentName: string;
+  studentIds: string[];
   courseCode: string;
   courseName: string;
   modality: SessionModality;

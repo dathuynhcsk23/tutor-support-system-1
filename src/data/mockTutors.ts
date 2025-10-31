@@ -5,10 +5,25 @@ import { tutorRepository, type TutorData } from "@/models";
  *
  * This data is used to initialize the TutorRepository.
  * The actual Tutor class instances are created by the repository.
+ *
+ * Note: tutor-1 is Nguyen Van A, who is also student-1.
+ * When logged in as a student, he should not see himself as a tutor.
+ * When logged in as a tutor, he should not see himself as a student.
  */
 const TUTORS_DATA: TutorData[] = [
   {
     id: "tutor-1",
+    name: "Nguyen Van A",
+    email: "a.nguyen@hcmut.edu.vn",
+    department: "Computer Science",
+    subjects: ["Data Structures & Algorithms", "Operating Systems"],
+    rating: 4.7,
+    totalSessions: 32,
+    bio: "Year 3 CS student who loves helping others understand complex algorithms. I believe in learning by doing!",
+    modalities: ["online", "in_person"],
+  },
+  {
+    id: "tutor-2",
     name: "Tran Minh Khoa",
     email: "khoa.tran@hcmut.edu.vn",
     department: "Computer Science",
@@ -19,7 +34,7 @@ const TUTORS_DATA: TutorData[] = [
     modalities: ["online", "in_person"],
   },
   {
-    id: "tutor-2",
+    id: "tutor-3",
     name: "Le Thi Bich",
     email: "bich.le@hcmut.edu.vn",
     department: "Computer Science",
@@ -30,7 +45,7 @@ const TUTORS_DATA: TutorData[] = [
     modalities: ["online", "in_person"],
   },
   {
-    id: "tutor-3",
+    id: "tutor-4",
     name: "Pham Hoang Nam",
     email: "nam.pham@hcmut.edu.vn",
     department: "Mathematics",
@@ -41,7 +56,7 @@ const TUTORS_DATA: TutorData[] = [
     modalities: ["online"],
   },
   {
-    id: "tutor-4",
+    id: "tutor-5",
     name: "Nguyen Thi Mai",
     email: "mai.nguyen@hcmut.edu.vn",
     department: "Computer Science",
@@ -52,7 +67,7 @@ const TUTORS_DATA: TutorData[] = [
     modalities: ["in_person"],
   },
   {
-    id: "tutor-5",
+    id: "tutor-6",
     name: "Vo Thanh Dat",
     email: "dat.vo@hcmut.edu.vn",
     department: "Electronics",
@@ -63,7 +78,7 @@ const TUTORS_DATA: TutorData[] = [
     modalities: ["online", "in_person"],
   },
   {
-    id: "tutor-6",
+    id: "tutor-7",
     name: "Hoang Van Duc",
     email: "duc.hoang@hcmut.edu.vn",
     department: "Physics",

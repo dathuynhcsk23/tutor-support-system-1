@@ -102,15 +102,22 @@ export class TutorRepository {
   /**
    * Auto-match tutors based on subject and modality preferences
    * Returns best recommendation and alternatives sorted by rating
+   *
+   * @param excludeTutorId - Optional tutor ID to exclude (e.g., when user is also a tutor)
    */
   autoMatch(params: {
     subject: string;
     modality: "all" | "online" | "in_person";
+    excludeTutorId?: string;
   }): { recommended: Tutor | null; alternates: Tutor[] } {
-    const { subject, modality } = params;
+    const { subject, modality, excludeTutorId } = params;
 
     // Filter candidates by subject and modality
     const candidates = this.findAll().filter((tutor) => {
+      // Exclude self if needed (when user is both student and tutor)
+      if (excludeTutorId && tutor.id === excludeTutorId) {
+        return false;
+      }
       const subjectMatch = !subject || tutor.teachesSubject(subject);
       const modalityMatch = modality === "all" || tutor.hasModality(modality);
       return subjectMatch && modalityMatch;
@@ -128,6 +135,31 @@ export class TutorRepository {
     const alternates = rest.slice(0, 3);
 
     return { recommended, alternates };
+  }
+
+  /**
+   * Search tutors with filters, optionally excluding a specific tutor
+   *
+   * @param excludeTutorId - Optional tutor ID to exclude (e.g., when user is also a tutor)
+   */
+  searchExcluding(
+    filters: TutorFilterCriteria,
+    excludeTutorId?: string
+  ): Tutor[] {
+    return this.findAll().filter((tutor) => {
+      if (excludeTutorId && tutor.id === excludeTutorId) {
+        return false;
+      }
+      return tutor.matchesFilters(filters);
+    });
+  }
+
+  /**
+   * Get all tutors except the specified one
+   * Useful when a user is both a student and a tutor
+   */
+  findAllExcluding(excludeTutorId: string): Tutor[] {
+    return this.findAll().filter((tutor) => tutor.id !== excludeTutorId);
   }
 
   /**

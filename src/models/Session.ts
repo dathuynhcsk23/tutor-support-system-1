@@ -1,5 +1,7 @@
 import type { SessionModality, SessionStatus } from "@/types/session";
 import { isBefore, isAfter, addMinutes } from "date-fns";
+import { studentRepository } from "./StudentRepository";
+import { tutorRepository } from "./TutorRepository";
 
 /**
  * Attendance status for a session (from tutor's perspective)
@@ -12,9 +14,8 @@ export type Attendance = "pending" | "present" | "absent";
 export interface SessionData {
   id: string;
   tutorId: string;
-  tutorName: string;
-  studentId: string;
-  studentName: string;
+  /** Array of student IDs participating in this session */
+  studentIds: string[];
   courseCode: string;
   courseName: string;
   modality: SessionModality;
@@ -40,9 +41,7 @@ export interface SessionData {
 export class Session {
   readonly id: string;
   readonly tutorId: string;
-  readonly tutorName: string;
-  readonly studentId: string;
-  readonly studentName: string;
+  readonly studentIds: readonly string[];
   readonly courseCode: string;
   readonly courseName: string;
   readonly modality: SessionModality;
@@ -59,9 +58,7 @@ export class Session {
   constructor(data: SessionData) {
     this.id = data.id;
     this.tutorId = data.tutorId;
-    this.tutorName = data.tutorName;
-    this.studentId = data.studentId;
-    this.studentName = data.studentName;
+    this.studentIds = Object.freeze([...data.studentIds]); // Immutable copy
     this.courseCode = data.courseCode;
     this.courseName = data.courseName;
     this.modality = data.modality;
@@ -76,7 +73,10 @@ export class Session {
     this._tutorNotes = data.tutorNotes;
   }
 
-  // Getters
+  // ============================================
+  // Basic Getters
+  // ============================================
+
   get status(): SessionStatus {
     return this._status;
   }
@@ -92,6 +92,69 @@ export class Session {
   get tutorNotes(): string | undefined {
     return this._tutorNotes;
   }
+
+  // ============================================
+  // Participant Resolution (from Repositories)
+  // ============================================
+
+  /**
+   * Get the tutor's name from repository
+   */
+  get tutorName(): string {
+    const tutor = tutorRepository.findById(this.tutorId);
+    return tutor?.name ?? "Unknown Tutor";
+  }
+
+  /**
+   * Get all student names from repository
+   */
+  getStudentNames(): string[] {
+    return this.studentIds.map((id) => {
+      const student = studentRepository.findById(id);
+      return student?.name ?? "Unknown Student";
+    });
+  }
+
+  /**
+   * Get the primary (first) student's name
+   * Useful for display when you only need one name
+   */
+  getPrimaryStudentName(): string {
+    if (this.studentIds.length === 0) return "No students";
+    const student = studentRepository.findById(this.studentIds[0]);
+    return student?.name ?? "Unknown Student";
+  }
+
+  /**
+   * Get participant summary for display
+   * e.g., "Nguyen Van A" or "Nguyen Van A and 2 others"
+   */
+  getStudentSummary(): string {
+    const names = this.getStudentNames();
+    if (names.length === 0) return "No students";
+    if (names.length === 1) return names[0];
+    return `${names[0]} and ${names.length - 1} other${
+      names.length > 2 ? "s" : ""
+    }`;
+  }
+
+  /**
+   * Get the number of students in this session
+   */
+  getStudentCount(): number {
+    return this.studentIds.length;
+  }
+
+  /**
+   * Check if a specific student is in this session
+   */
+  hasStudent(studentId: string): boolean {
+    return this.studentIds.includes(studentId);
+  }
+
+  // ============================================
+  // Status Checks
+  // ============================================
 
   /**
    * Check if session is upcoming (not started yet)
@@ -159,6 +222,10 @@ export class Session {
     return this.modality === "in_person";
   }
 
+  // ============================================
+  // Time & Duration
+  // ============================================
+
   /**
    * Get session duration in minutes
    */
@@ -188,6 +255,10 @@ export class Session {
     const joinWindow = addMinutes(this.startTime, -minutesBefore);
     return isAfter(now, joinWindow) && isBefore(now, this.endTime);
   }
+
+  // ============================================
+  // Display Helpers
+  // ============================================
 
   /**
    * Get meeting location based on modality
@@ -239,6 +310,10 @@ export class Session {
     }
   }
 
+  // ============================================
+  // Serialization
+  // ============================================
+
   /**
    * Convert to plain object (for serialization)
    */
@@ -246,9 +321,7 @@ export class Session {
     return {
       id: this.id,
       tutorId: this.tutorId,
-      tutorName: this.tutorName,
-      studentId: this.studentId,
-      studentName: this.studentName,
+      studentIds: [...this.studentIds],
       courseCode: this.courseCode,
       courseName: this.courseName,
       modality: this.modality,

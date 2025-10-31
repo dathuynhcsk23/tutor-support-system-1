@@ -53,7 +53,7 @@ export class SessionRepository {
    * Get sessions for a specific student
    */
   findByStudentId(studentId: string): Session[] {
-    return this.findAll().filter((session) => session.studentId === studentId);
+    return this.findAll().filter((session) => session.hasStudent(studentId));
   }
 
   /**
