@@ -185,7 +185,9 @@ export default function TutorDashboard() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => navigate(`/tutor/wrap-up/${session.id}`)}
+                    onClick={() =>
+                      navigate(`/tutor/schedule?sessionId=${session.id}`)
+                    }
                   >
                     <ClipboardCheck className="mr-2 h-4 w-4" />
                     Complete Wrap-up

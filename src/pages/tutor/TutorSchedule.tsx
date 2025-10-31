@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   addDays,
   startOfMonth,
@@ -85,6 +85,7 @@ const SORT_OPTIONS = [
 
 export default function TutorSchedule() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Get tutor ID from authenticated user
   const tutorId = user?.tutorId ?? "tutor-1";
@@ -104,6 +105,30 @@ export default function TutorSchedule() {
   // Session details drawer state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Get all sessions from repository for authenticated tutor
+  const allSessions = useMemo(
+    () => sessionRepository.findByTutorId(tutorId),
+    [tutorId]
+  );
+
+  // Handle sessionId URL param (e.g., from "Complete Wrap-up" button on dashboard)
+  useEffect(() => {
+    const sessionId = searchParams.get("sessionId");
+    if (sessionId) {
+      const session = allSessions.find((s) => s.id === sessionId);
+      if (session) {
+        setSelectedSession(session);
+        setDrawerOpen(true);
+        // Switch to past view if it's a completed session
+        if (session.isCompleted()) {
+          setStatusFilter("past");
+        }
+      }
+      // Clear the param from URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, allSessions]);
 
   // Handlers
   const handleSessionClick = (session: Session) => {
@@ -125,9 +150,6 @@ export default function TutorSchedule() {
     // For now, just close and show success
     setDrawerOpen(false);
   };
-
-  // Get all sessions from repository for authenticated tutor
-  const allSessions = sessionRepository.findByTutorId(tutorId);
 
   // Apply filters
   const filteredSessions = useMemo(() => {
