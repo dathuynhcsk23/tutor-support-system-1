@@ -26,10 +26,13 @@ export default function StudentDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Use repository methods - for now using student-1 as mock user
-  const nextSession = sessionRepository.getNextSessionForStudent("student-1");
+  // Get student ID from authenticated user
+  const studentId = user?.studentId ?? "student-1";
+
+  // Use repository methods with authenticated user's studentId
+  const nextSession = sessionRepository.getNextSessionForStudent(studentId);
   const feedbackSessions = sessionRepository
-    .getSessionsNeedingFeedback("student-1")
+    .getSessionsNeedingFeedback(studentId)
     .slice(0, 3);
 
   return (

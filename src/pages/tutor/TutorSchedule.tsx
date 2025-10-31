@@ -49,6 +49,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sessionRepository, type Session } from "@/models";
 import { formatDate, formatTimeRange, formatTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 // Ensure mock data is loaded
 import "@/data/mockSessions";
 
@@ -82,6 +83,11 @@ const SORT_OPTIONS = [
 ] as const;
 
 export default function TutorSchedule() {
+  const { user } = useAuth();
+
+  // Get tutor ID from authenticated user
+  const tutorId = user?.tutorId ?? "tutor-1";
+
   // View mode: list or calendar
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -105,8 +111,8 @@ export default function TutorSchedule() {
     console.log("Selected session:", session.id);
   };
 
-  // Get all sessions from repository for tutor-1
-  const allSessions = sessionRepository.findByTutorId("tutor-1");
+  // Get all sessions from repository for authenticated tutor
+  const allSessions = sessionRepository.findByTutorId(tutorId);
 
   // Apply filters
   const filteredSessions = useMemo(() => {
@@ -144,7 +150,9 @@ export default function TutorSchedule() {
     } else if (sortOption === "course") {
       sessions.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
     } else {
-      sessions.sort((a, b) => a.studentName.localeCompare(b.studentName));
+      sessions.sort((a, b) =>
+        a.getPrimaryStudentName().localeCompare(b.getPrimaryStudentName())
+      );
     }
 
     return sessions;
@@ -393,7 +401,7 @@ function SessionRow({ session, onClick }: SessionRowProps) {
           <p className="text-sm text-muted-foreground">{session.courseName}</p>
         </div>
       </TableCell>
-      <TableCell>{session.studentName}</TableCell>
+      <TableCell>{session.getStudentSummary()}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -575,7 +583,7 @@ function SessionCalendar({
                       </div>
                       <div className="text-[10px] opacity-75">
                         {formatTime(session.startTime)} ·{" "}
-                        {session.studentName.split(" ")[0]}
+                        {session.getPrimaryStudentName().split(" ")[0]}
                       </div>
                     </button>
                   ))}

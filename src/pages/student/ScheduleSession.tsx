@@ -33,12 +33,12 @@ import {
 import { tutorRepository, sessionRepository, type Tutor } from "@/models";
 import type { SessionData } from "@/models/Session";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 // Ensure mock data is loaded
 import "@/data/mockTutors";
 
 /**
  * Available time slots for scheduling
- * In a real app, these would come from tutor availability
  */
 const TIME_SLOTS = [
   { start: "09:00", end: "10:00", label: "9:00 AM - 10:00 AM" },
@@ -72,6 +72,10 @@ function deriveCourseCode(subject: string): string {
 export default function ScheduleSession() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+
+  // Get student ID from authenticated user
+  const studentId = user?.studentId ?? "student-1";
 
   // Get tutor from URL params
   const tutorId = searchParams.get("tutorId") ?? "";
@@ -160,9 +164,7 @@ export default function ScheduleSession() {
     const sessionData: SessionData = {
       id: `session-${Date.now()}`, // Generate unique ID
       tutorId: tutor.id,
-      tutorName: tutor.name,
-      studentId: "student-1", // Current user (hardcoded for now)
-      studentName: "Current Student",
+      studentIds: [studentId], // Current authenticated user
       courseCode: deriveCourseCode(selectedSubject),
       courseName: selectedSubject,
       modality: selectedModality,

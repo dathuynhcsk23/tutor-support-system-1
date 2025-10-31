@@ -20,12 +20,15 @@ export default function TutorDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Use repository methods - for now using tutor-1 as mock user
-  const nextSession = sessionRepository.getNextSessionForTutor("tutor-1");
+  // Get tutor ID from authenticated user
+  const tutorId = user?.tutorId ?? "tutor-1";
+
+  // Use repository methods with authenticated user's tutorId
+  const nextSession = sessionRepository.getNextSessionForTutor(tutorId);
   const wrapUpSessions = sessionRepository
-    .getSessionsNeedingWrapUp("tutor-1")
+    .getSessionsNeedingWrapUp(tutorId)
     .slice(0, 5);
-  const upcomingSessions = sessionRepository.getUpcomingForTutor("tutor-1");
+  const upcomingSessions = sessionRepository.getUpcomingForTutor(tutorId);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
@@ -77,7 +80,9 @@ export default function TutorDashboard() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   with{" "}
-                  <span className="font-medium">{nextSession.studentName}</span>
+                  <span className="font-medium">
+                    {nextSession.getStudentSummary()}
+                  </span>
                 </p>
                 <div className="flex gap-2 pt-2">
                   <Button size="sm" asChild>
@@ -162,7 +167,7 @@ export default function TutorDashboard() {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {formatDateTimeRelative(session.startTime)} with{" "}
-                      {session.studentName}
+                      {session.getStudentSummary()}
                     </p>
                     <div className="flex gap-2">
                       {session.attendance === "pending" && (

@@ -27,6 +27,7 @@ import {
   type Tutor,
   type TutorFilterCriteria,
 } from "@/models";
+import { useAuth } from "@/context/AuthContext";
 // Import to ensure mock data is loaded
 import "@/data/mockTutors";
 
@@ -39,6 +40,7 @@ const initialFilters: TutorFilterCriteria = {
 
 export default function FindTutor() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<TutorFilterCriteria>(initialFilters);
   const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,7 +50,11 @@ export default function FindTutor() {
   const subjects = useMemo(() => tutorRepository.getSubjects(), []);
 
   // Filter tutors using repository search
-  const tutors = useMemo(() => tutorRepository.search(filters), [filters]);
+  // Exclude self if user is also a tutor (e.g., Nguyen Van A is both student and tutor)
+  const tutors = useMemo(
+    () => tutorRepository.searchExcluding(filters, user?.tutorId),
+    [filters, user?.tutorId]
+  );
 
   const handleSelectTutor = (tutor: Tutor) => {
     setSelectedTutor(tutor);

@@ -49,6 +49,7 @@ import { SessionDetailsDrawer } from "@/components/SessionDetailsDrawer";
 import { sessionRepository, type Session } from "@/models";
 import { formatDate, formatTimeRange, formatTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 // Ensure mock data is loaded
 import "@/data/mockSessions";
 
@@ -81,6 +82,11 @@ const SORT_OPTIONS = [
 ] as const;
 
 export default function MySchedule() {
+  const { user } = useAuth();
+
+  // Get student ID from authenticated user
+  const studentId = user?.studentId ?? "student-1";
+
   // View mode: list or calendar
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -113,10 +119,8 @@ export default function MySchedule() {
     console.log("Cancel session:", session.id);
   };
 
-  // Get all sessions from repository
-  // Note: We fetch fresh on each render since repository is updated externally
-  // In a real app, this would use React Query or a state management library
-  const allSessions = sessionRepository.findByStudentId("student-1");
+  // Get all sessions from repository for authenticated student
+  const allSessions = sessionRepository.findByStudentId(studentId);
 
   // Apply filters
   const filteredSessions = useMemo(() => {

@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TutorProfileDialog } from "@/components/TutorProfileDialog";
 import { tutorRepository, type Tutor } from "@/models";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 // Ensure mock data is loaded
 import "@/data/mockTutors";
 
@@ -60,6 +61,7 @@ interface AutoMatchFormState {
 
 export default function AutoMatch() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Get filter options from repository
   const subjects = useMemo(() => tutorRepository.getSubjects(), []);
@@ -90,9 +92,11 @@ export default function AutoMatch() {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Use repository's autoMatch method
+    // Exclude self if user is also a tutor
     const result = tutorRepository.autoMatch({
       subject: formState.subject,
       modality: formState.modality,
+      excludeTutorId: user?.tutorId,
     });
 
     setRecommended(result.recommended);

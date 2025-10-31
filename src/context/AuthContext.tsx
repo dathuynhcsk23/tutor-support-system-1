@@ -62,6 +62,8 @@ const MOCK_USER: User = {
   name: "Nguyen Van A",
   email: "a.nguyen@hcmut.edu.vn",
   roles: ["student", "tutor"],
+  studentId: "student-1",
+  tutorId: "tutor-1",
 };
 
 async function mockSignIn(): Promise<User> {

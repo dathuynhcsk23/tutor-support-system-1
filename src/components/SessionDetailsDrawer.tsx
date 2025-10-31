@@ -216,8 +216,12 @@ export function SessionDetailsDrawer({
                   />
                   <ParticipantCard
                     role="Student"
-                    name={session.studentName}
-                    subtitle="You"
+                    name={session.getStudentSummary()}
+                    subtitle={
+                      session.getStudentCount() > 1
+                        ? `${session.getStudentCount()} students`
+                        : "You"
+                    }
                   />
                 </div>
               </section>
