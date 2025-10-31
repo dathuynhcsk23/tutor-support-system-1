@@ -4,8 +4,10 @@ import {
   Clock,
   ExternalLink,
   Globe,
+  GraduationCap,
   MapPin,
   MessageSquare,
+  Users,
   Video,
   X,
 } from "lucide-react";
@@ -22,7 +24,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatTimeRange } from "@/lib/date";
-import type { Session } from "@/models";
+import { studentRepository, tutorRepository, type Session } from "@/models";
 
 // ============================================
 // Types
@@ -34,6 +36,8 @@ interface SessionDetailsDrawerProps {
   onOpenChange: (open: boolean) => void;
   onReschedule?: (session: Session) => void;
   onCancel?: (session: Session) => void;
+  /** Current user's student ID for highlighting "You" in participant list */
+  currentStudentId?: string;
 }
 
 // ============================================
@@ -76,14 +80,16 @@ function InfoRow({
   );
 }
 
-function ParticipantCard({
-  role,
+function ParticipantRow({
   name,
   subtitle,
+  isYou,
+  variant = "default",
 }: {
-  role: string;
   name: string;
   subtitle?: string;
+  isYou?: boolean;
+  variant?: "default" | "tutor";
 }) {
   const initials = name
     .split(" ")
@@ -93,15 +99,25 @@ function ParticipantCard({
     .slice(0, 2);
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
-      <Avatar className="h-10 w-10">
-        <AvatarFallback className="bg-primary/10 text-primary">
+    <div className="flex items-center gap-3 py-2">
+      <Avatar className="h-9 w-9">
+        <AvatarFallback
+          className={
+            variant === "tutor" ? "bg-primary/10 text-primary" : "bg-muted"
+          }
+        >
           {initials}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground">{role}</p>
-        <p className="truncate text-sm font-medium">{name}</p>
+        <p className="truncate text-sm font-medium">
+          {name}
+          {isYou && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              (You)
+            </span>
+          )}
+        </p>
         {subtitle && (
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         )}
@@ -120,6 +136,7 @@ export function SessionDetailsDrawer({
   onOpenChange,
   onReschedule,
   onCancel,
+  currentStudentId,
 }: SessionDetailsDrawerProps) {
   if (!session) return null;
 
@@ -203,27 +220,54 @@ export function SessionDetailsDrawer({
 
               <Separator />
 
-              {/* Participants */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Participants
+              {/* Tutor */}
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4" />
+                  Tutor
                 </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <ParticipantCard
-                    role="Tutor"
+                <div className="rounded-lg border p-3">
+                  <ParticipantRow
                     name={session.tutorName}
-                    subtitle="Computer Science Dept."
-                  />
-                  <ParticipantCard
-                    role="Student"
-                    name={session.getStudentSummary()}
                     subtitle={
-                      session.getStudentCount() > 1
-                        ? `${session.getStudentCount()} students`
-                        : "You"
+                      tutorRepository.findById(session.tutorId)?.department
                     }
+                    variant="tutor"
                   />
                 </div>
+              </section>
+
+              <Separator />
+
+              {/* Students */}
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  {session.getStudentCount() > 1
+                    ? `Students (${session.getStudentCount()})`
+                    : "Student"}
+                </h3>
+                <div className="rounded-lg border divide-y">
+                  {session.studentIds.map((studentId) => {
+                    const student = studentRepository.findById(studentId);
+                    if (!student) return null;
+                    return (
+                      <div key={studentId} className="px-3">
+                        <ParticipantRow
+                          name={student.name}
+                          subtitle={student.program}
+                          isYou={studentId === currentStudentId}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                {session.getStudentCount() > 1 && (
+                  <p className="text-xs text-muted-foreground">
+                    This is a group session with {session.getStudentCount()}{" "}
+                    students.
+                  </p>
+                )}
               </section>
 
               {/* Notes (if any) */}

@@ -27,7 +27,6 @@ const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
  *
  * Important: tutor-1 is Nguyen Van A (same as student-1).
  * Sessions should NOT have tutor-1 tutoring student-1 (self-tutoring).
- * All old tutor-1 references shifted to tutor-2 (Tran Minh Khoa).
  */
 const SESSIONS_DATA: SessionData[] = [
   // =============================================
@@ -35,11 +34,11 @@ const SESSIONS_DATA: SessionData[] = [
   // These are tutored by OTHER tutors (not tutor-1)
   // =============================================
 
-  // Upcoming session - tomorrow at 10am (tutored by Tran Minh Khoa)
+  // Upcoming session - tomorrow at 10am (tutored by Tran Minh Khoa) - GROUP SESSION
   {
     id: "session-1",
     tutorId: "tutor-2", // Tran Minh Khoa
-    studentIds: ["student-1"],
+    studentIds: ["student-1", "student-2", "student-3"], // Group of 3
     courseCode: "CO2003",
     courseName: "Data Structures & Algorithms",
     modality: "online",
@@ -48,11 +47,11 @@ const SESSIONS_DATA: SessionData[] = [
     endTime: setTime(addDays(today, 1), 11, 0),
     meetingUrl: "https://meet.google.com/abc-defg-hij",
   },
-  // Upcoming session - in 3 days (tutored by Le Thi Bich)
+  // Upcoming session - in 3 days (tutored by Le Thi Bich) - GROUP SESSION
   {
     id: "session-2",
     tutorId: "tutor-3", // Le Thi Bich
-    studentIds: ["student-1"],
+    studentIds: ["student-1", "student-4"], // Pair session
     courseCode: "CO3001",
     courseName: "Software Engineering",
     modality: "in_person",
@@ -77,11 +76,11 @@ const SESSIONS_DATA: SessionData[] = [
     attendance: "present",
     tutorNotes: "Reviewed tree traversal algorithms. Good progress!",
   },
-  // Completed session - 3 days ago (tutored by Pham Hoang Nam)
+  // Completed session - 3 days ago (tutored by Pham Hoang Nam) - GROUP SESSION
   {
     id: "session-4",
     tutorId: "tutor-4", // Pham Hoang Nam
-    studentIds: ["student-1"],
+    studentIds: ["student-1", "student-2", "student-4", "student-5"], // Group of 4
     courseCode: "MT1003",
     courseName: "Calculus 1",
     modality: "in_person",
@@ -91,7 +90,8 @@ const SESSIONS_DATA: SessionData[] = [
     location: "Room B4-201",
     feedbackSubmitted: true,
     attendance: "present",
-    tutorNotes: "Covered integration techniques. Student showed good progress.",
+    tutorNotes:
+      "Covered integration techniques. All students showed good progress.",
   },
   // Cancelled session (was with Le Thi Bich)
   {

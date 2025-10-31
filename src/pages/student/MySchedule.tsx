@@ -335,6 +335,7 @@ export default function MySchedule() {
         onOpenChange={setDrawerOpen}
         onReschedule={handleReschedule}
         onCancel={handleCancel}
+        currentStudentId={studentId}
       />
     </section>
   );
