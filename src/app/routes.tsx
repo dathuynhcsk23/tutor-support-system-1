@@ -15,6 +15,7 @@ import Library from "@/pages/student/Library";
 import Profile from "@/pages/student/Profile";
 import TutorDashboard from "@/pages/tutor/TutorDashboard";
 import TutorSchedule from "@/pages/tutor/TutorSchedule";
+import { TutorAvailability } from "@/pages/tutor/TutorAvailability";
 
 export default function AppRoutes() {
   return useRoutes([
@@ -73,11 +74,7 @@ export default function AppRoutes() {
             },
             {
               path: "/tutor/availability",
-              element: (
-                <div className="mx-auto max-w-5xl">
-                  Availability (coming soon)
-                </div>
-              ),
+              element: <TutorAvailability />,
             },
             {
               path: "/tutor/library",
