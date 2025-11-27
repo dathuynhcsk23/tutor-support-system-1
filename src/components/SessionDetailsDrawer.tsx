@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   Calendar,
@@ -23,6 +24,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { FeedbackDialog, type FeedbackData } from "@/components/FeedbackDialog";
 import { formatTimeRange } from "@/lib/date";
 import { studentRepository, tutorRepository, type Session } from "@/models";
 
@@ -138,6 +140,8 @@ export function SessionDetailsDrawer({
   onCancel,
   currentStudentId,
 }: SessionDetailsDrawerProps) {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
   if (!session) return null;
 
   const canJoin = session.canJoin();
@@ -145,213 +149,240 @@ export function SessionDetailsDrawer({
   const canReschedule = session.isUpcoming();
   const showFeedback = session.needsFeedback();
 
+  const handleFeedbackSubmit = (feedback: FeedbackData) => {
+    console.log("Feedback submitted:", feedback);
+    alert(
+      `Thank you for your feedback!\n\nRating: ${feedback.rating} stars\n${
+        feedback.comment ? `Comment: ${feedback.comment}\n` : ""
+      }${feedback.reportIssue ? "Issue reported to coordinator." : ""}`
+    );
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="mx-auto h-[85vh] max-h-[90vh] max-w-2xl rounded-t-xl p-0"
-      >
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <SheetHeader className="space-y-3 border-b px-6 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <SheetTitle className="text-xl">
-                  {session.courseCode} · {session.courseName}
-                </SheetTitle>
-                <SheetDescription>
-                  {format(session.startTime, "EEEE, MMMM d, yyyy")}
-                </SheetDescription>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="bottom"
+          className="mx-auto h-[85vh] max-h-[90vh] max-w-2xl rounded-t-xl p-0"
+        >
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <SheetHeader className="space-y-3 border-b px-6 py-4">
+              <div className="flex items-start justify-between gap-4 mr-5">
+                <div className="space-y-1">
+                  <SheetTitle className="text-xl">
+                    {session.courseCode} · {session.courseName}
+                  </SheetTitle>
+                  <SheetDescription>
+                    {format(session.startTime, "EEEE, MMMM d, yyyy")}
+                  </SheetDescription>
+                </div>
+                <Badge variant={session.getStatusVariant()}>
+                  {session.getStatusLabel()}
+                </Badge>
               </div>
-              <Badge variant={session.getStatusVariant()}>
-                {session.getStatusLabel()}
-              </Badge>
-            </div>
 
-            {/* Join Button - Prominent placement for active/upcoming sessions */}
-            {canJoin && (
-              <Button
-                size="lg"
-                className="w-full gap-2"
-                onClick={() => {
-                  if (session.meetingUrl) {
-                    window.open(session.meetingUrl, "_blank");
-                  }
-                }}
-              >
-                <Video className="h-4 w-4" />
-                Join Session
-              </Button>
-            )}
-          </SheetHeader>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="space-y-6 p-6">
-              {/* Session Details */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Session Details
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <InfoRow
-                    icon={Clock}
-                    label="Time"
-                    value={formatTimeRange(session.startTime, session.endTime)}
-                  />
-                  <InfoRow
-                    icon={Calendar}
-                    label="Duration"
-                    value={`${session.getDurationMinutes()} minutes`}
-                  />
-                  <InfoRow
-                    icon={session.isOnline() ? Globe : MapPin}
-                    label="Location"
-                    value={session.getMeetingLocation()}
-                    href={session.isOnline() ? session.meetingUrl : undefined}
-                  />
-                  <InfoRow
-                    icon={Video}
-                    label="Format"
-                    value={session.getModalityLabel()}
-                  />
-                </div>
-              </section>
-
-              <Separator />
-
-              {/* Tutor */}
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4" />
-                  Tutor
-                </h3>
-                <div className="rounded-lg border p-3">
-                  <ParticipantRow
-                    name={session.tutorName}
-                    subtitle={
-                      tutorRepository.findById(session.tutorId)?.department
+              {/* Join Button */}
+              {canJoin && (
+                <Button
+                  size="lg"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    if (session.meetingUrl) {
+                      window.open(session.meetingUrl, "_blank");
                     }
-                    variant="tutor"
-                  />
-                </div>
-              </section>
-
-              <Separator />
-
-              {/* Students */}
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  {session.getStudentCount() > 1
-                    ? `Students (${session.getStudentCount()})`
-                    : "Student"}
-                </h3>
-                <div className="rounded-lg border divide-y">
-                  {session.studentIds.map((studentId) => {
-                    const student = studentRepository.findById(studentId);
-                    if (!student) return null;
-                    return (
-                      <div key={studentId} className="px-3">
-                        <ParticipantRow
-                          name={student.name}
-                          subtitle={student.program}
-                          isYou={studentId === currentStudentId}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-                {session.getStudentCount() > 1 && (
-                  <p className="text-xs text-muted-foreground">
-                    This is a group session with {session.getStudentCount()}{" "}
-                    students.
-                  </p>
-                )}
-              </section>
-
-              {/* Notes (if any) */}
-              {session.notes && (
-                <>
-                  <Separator />
-                  <section className="space-y-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      Session Notes
-                    </h3>
-                    <div className="rounded-lg bg-muted/50 p-4">
-                      <p className="text-sm text-muted-foreground">
-                        {session.notes}
-                      </p>
-                    </div>
-                  </section>
-                </>
+                  }}
+                >
+                  <Video className="h-4 w-4" />
+                  Join Session
+                </Button>
               )}
+            </SheetHeader>
 
-              {/* Feedback Prompt */}
-              {showFeedback && (
-                <>
-                  <Separator />
-                  <section className="space-y-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                      Feedback
-                    </h3>
-                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                      <div className="flex items-start gap-3">
-                        <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium">
-                            How was your session?
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Your feedback helps tutors improve and helps other
-                            students find great tutors.
-                          </p>
-                          <Button size="sm" variant="outline" className="mt-2">
-                            Give Feedback
-                          </Button>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="space-y-6 p-6">
+                {/* Session Details */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Session Details
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <InfoRow
+                      icon={Clock}
+                      label="Time"
+                      value={formatTimeRange(
+                        session.startTime,
+                        session.endTime
+                      )}
+                    />
+                    <InfoRow
+                      icon={Calendar}
+                      label="Duration"
+                      value={`${session.getDurationMinutes()} minutes`}
+                    />
+                    <InfoRow
+                      icon={session.isOnline() ? Globe : MapPin}
+                      label="Location"
+                      value={session.getMeetingLocation()}
+                      href={session.isOnline() ? session.meetingUrl : undefined}
+                    />
+                    <InfoRow
+                      icon={Video}
+                      label="Format"
+                      value={session.getModalityLabel()}
+                    />
+                  </div>
+                </section>
+
+                <Separator />
+
+                {/* Tutor */}
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    Tutor
+                  </h3>
+                  <div className="rounded-lg border p-3">
+                    <ParticipantRow
+                      name={session.tutorName}
+                      subtitle={
+                        tutorRepository.findById(session.tutorId)?.department
+                      }
+                      variant="tutor"
+                    />
+                  </div>
+                </section>
+
+                <Separator />
+
+                {/* Students */}
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    {session.getStudentCount() > 1
+                      ? `Students (${session.getStudentCount()})`
+                      : "Student"}
+                  </h3>
+                  <div className="rounded-lg border divide-y">
+                    {session.studentIds.map((studentId) => {
+                      const student = studentRepository.findById(studentId);
+                      if (!student) return null;
+                      return (
+                        <div key={studentId} className="px-3">
+                          <ParticipantRow
+                            name={student.name}
+                            subtitle={student.program}
+                            isYou={studentId === currentStudentId}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {session.getStudentCount() > 1 && (
+                    <p className="text-xs text-muted-foreground">
+                      This is a group session with {session.getStudentCount()}{" "}
+                      students.
+                    </p>
+                  )}
+                </section>
+
+                {/* Notes (if any) */}
+                {session.notes && (
+                  <>
+                    <Separator />
+                    <section className="space-y-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Session Notes
+                      </h3>
+                      <div className="rounded-lg bg-muted/50 p-4">
+                        <p className="text-sm text-muted-foreground">
+                          {session.notes}
+                        </p>
+                      </div>
+                    </section>
+                  </>
+                )}
+
+                {/* Feedback Prompt */}
+                {showFeedback && (
+                  <>
+                    <Separator />
+                    <section className="space-y-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Feedback
+                      </h3>
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                        <div className="flex items-start gap-3">
+                          <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              How was your session?
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Your feedback helps tutors improve and helps other
+                              students find great tutors.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2"
+                              onClick={() => setFeedbackOpen(true)}
+                            >
+                              Give Feedback
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </section>
-                </>
-              )}
+                    </section>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Footer Actions */}
-          <div className="border-t p-4">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {canReschedule && onReschedule && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    onReschedule(session);
-                    onOpenChange(false);
-                  }}
-                >
-                  Reschedule
+            {/* Footer Actions */}
+            <div className="border-t p-4">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {canReschedule && onReschedule && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onReschedule(session);
+                      onOpenChange(false);
+                    }}
+                  >
+                    Reschedule
+                  </Button>
+                )}
+                {canCancel && onCancel && (
+                  <Button
+                    variant="outline"
+                    className="text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      onCancel(session);
+                      onOpenChange(false);
+                    }}
+                  >
+                    <X className="mr-1 h-4 w-4" />
+                    Cancel Session
+                  </Button>
+                )}
+                <Button variant="secondary" onClick={() => onOpenChange(false)}>
+                  Close
                 </Button>
-              )}
-              {canCancel && onCancel && (
-                <Button
-                  variant="outline"
-                  className="text-destructive hover:bg-destructive/10"
-                  onClick={() => {
-                    onCancel(session);
-                    onOpenChange(false);
-                  }}
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  Cancel Session
-                </Button>
-              )}
-              <Button variant="secondary" onClick={() => onOpenChange(false)}>
-                Close
-              </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+
+      {/* Feedback Dialog */}
+      <FeedbackDialog
+        session={session}
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
+        onSubmit={handleFeedbackSubmit}
+      />
+    </>
   );
 }

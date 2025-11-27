@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -16,8 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FeedbackDialog, type FeedbackData } from "@/components/FeedbackDialog";
 import { useAuth } from "@/context/AuthContext";
-import { sessionRepository } from "@/models";
+import { sessionRepository, type Session } from "@/models";
 // Import to ensure mock data is loaded
 import "@/data/mockSessions";
 import { formatDateTimeRelative, formatTimeRange } from "@/lib/date";
@@ -25,6 +27,10 @@ import { formatDateTimeRelative, formatTimeRange } from "@/lib/date";
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Feedback dialog state
+  const [feedbackSession, setFeedbackSession] = useState<Session | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   // Get student ID from authenticated user
   const studentId = user?.studentId ?? "student-1";
@@ -35,164 +41,191 @@ export default function StudentDashboard() {
     .getSessionsNeedingFeedback(studentId)
     .slice(0, 3);
 
-  return (
-    <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      {/* Header */}
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}
-        </h1>
-        <p className="text-muted-foreground">
-          Review your next session, find tutors, and keep feedback flowing.
-        </p>
-      </header>
+  const handleOpenFeedback = (session: Session) => {
+    setFeedbackSession(session);
+    setFeedbackOpen(true);
+  };
 
-      {/* Main Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Next Session Card */}
+  const handleFeedbackSubmit = (feedback: FeedbackData) => {
+    console.log("Feedback submitted:", feedback);
+    alert(
+      `Thank you for your feedback!\n\nRating: ${feedback.rating} stars\n${
+        feedback.comment ? `Comment: ${feedback.comment}\n` : ""
+      }${feedback.reportIssue ? "Issue reported to coordinator." : ""}`
+    );
+  };
+
+  return (
+    <>
+      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        {/* Header */}
+        <header>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}
+          </h1>
+          <p className="text-muted-foreground">
+            Review your next session, find tutors, and keep feedback flowing.
+          </p>
+        </header>
+
+        {/* Main Cards */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Next Session Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Next Session
+              </CardTitle>
+              <CardDescription>
+                Your upcoming tutoring slot at a glance.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {nextSession ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">
+                      {nextSession.courseCode} · {nextSession.courseName}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={nextSession.getStatusVariant()}>
+                      {nextSession.getStatusLabel()}
+                    </Badge>
+                    <Badge variant="outline">
+                      {nextSession.getModalityLabel()}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDateTimeRelative(nextSession.startTime)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatTimeRange(
+                      nextSession.startTime,
+                      nextSession.endTime
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    with {nextSession.tutorName}
+                  </p>
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" asChild>
+                      <Link to="/student/schedule">View Details</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed p-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    You don't have any sessions booked yet.
+                  </p>
+                  <Button size="sm" onClick={() => navigate("/student/find")}>
+                    Find a Tutor
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions Card */}
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription>
+                Everything you need to stay on track.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <Button
+                onClick={() => navigate("/student/find")}
+                className="justify-start"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Find a Tutor
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/student/auto-match")}
+                className="justify-start"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Try Auto-match
+              </Button>
+              <Button
+                variant="ghost"
+                className="justify-between"
+                onClick={() => navigate("/student/schedule")}
+              >
+                <span className="flex items-center">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  View Schedule
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Feedback Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Next Session
+              <MessageCircle className="h-5 w-5" />
+              Feedback & Reminders
             </CardTitle>
             <CardDescription>
-              Your upcoming tutoring slot at a glance.
+              Share quick feedback to help improve the program.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {nextSession ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold">
-                    {nextSession.courseCode} · {nextSession.courseName}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant={nextSession.getStatusVariant()}>
-                    {nextSession.getStatusLabel()}
-                  </Badge>
-                  <Badge variant="outline">
-                    {nextSession.getModalityLabel()}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatDateTimeRelative(nextSession.startTime)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {formatTimeRange(nextSession.startTime, nextSession.endTime)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  with {nextSession.tutorName}
-                </p>
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" asChild>
-                    <Link to="/student/schedule">View Details</Link>
-                  </Button>
-                </div>
-              </div>
+            {feedbackSessions.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {feedbackSessions.map((session) => (
+                  <li
+                    key={session.id}
+                    className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {session.courseCode} · {session.courseName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDateTimeRelative(session.startTime)} with{" "}
+                        {session.tutorName}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleOpenFeedback(session)}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Give Feedback
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <div className="rounded-lg border border-dashed p-4 text-center">
-                <p className="text-sm text-muted-foreground mb-3">
-                  You don't have any sessions booked yet.
-                </p>
-                <Button size="sm" onClick={() => navigate("/student/find")}>
-                  Find a Tutor
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                No feedback tasks right now. We'll nudge you when something
+                needs attention.
+              </p>
             )}
           </CardContent>
         </Card>
+      </section>
 
-        {/* Quick Actions Card */}
-        <Card className="border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Everything you need to stay on track.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <Button
-              onClick={() => navigate("/student/find")}
-              className="justify-start"
-            >
-              <Search className="mr-2 h-4 w-4" />
-              Find a Tutor
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/student/auto-match")}
-              className="justify-start"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Try Auto-match
-            </Button>
-            <Button
-              variant="ghost"
-              className="justify-between"
-              onClick={() => navigate("/student/schedule")}
-            >
-              <span className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4" />
-                View Schedule
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Feedback Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            Feedback & Reminders
-          </CardTitle>
-          <CardDescription>
-            Share quick feedback to help improve the program.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {feedbackSessions.length > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {feedbackSessions.map((session) => (
-                <li
-                  key={session.id}
-                  className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {session.courseCode} · {session.courseName}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDateTimeRelative(session.startTime)} with{" "}
-                      {session.tutorName}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate(`/student/feedback/${session.id}`)}
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Give Feedback
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No feedback tasks right now. We'll nudge you when something needs
-              attention.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    </section>
+      {/* Feedback Dialog */}
+      <FeedbackDialog
+        session={feedbackSession}
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
+        onSubmit={handleFeedbackSubmit}
+      />
+    </>
   );
 }
