@@ -151,11 +151,11 @@ export default function LandingPage() {
             HCMUT Tutor Support System
           </span>
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl drop-shadow-lg">
-            Elevate learning with guided tutoring
+            Elevate learning with guided tutoring at HCMUT
           </h1>
           <p className="text-lg text-white/90 drop-shadow">
             Seamless scheduling, expert support, and transparent outcomes for
-            students and tutors at HCMUT.
+            students and tutors.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" onClick={() => signIn()} disabled={loading}>

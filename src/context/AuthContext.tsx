@@ -83,6 +83,7 @@ interface AuthContextValue {
   loading: boolean;
   signIn: () => void;
   selectRole: (role: Role) => void;
+  switchRole: () => void;
   signOut: () => void;
 }
 
@@ -144,6 +145,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [navigate, user]
   );
 
+  const switchRole = useCallback(() => {
+    // Clear the active role so RoleSelection doesn't redirect back
+    setActiveRole(null);
+    navigate("/role");
+  }, [navigate]);
+
   const signOut = useCallback(() => {
     setUser(null);
     setActiveRole(null);
@@ -152,8 +159,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [navigate]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, activeRole, loading, signIn, selectRole, signOut }),
-    [user, activeRole, loading, signIn, selectRole, signOut]
+    () => ({
+      user,
+      activeRole,
+      loading,
+      signIn,
+      selectRole,
+      switchRole,
+      signOut,
+    }),
+    [user, activeRole, loading, signIn, selectRole, switchRole, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

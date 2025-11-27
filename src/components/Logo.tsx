@@ -24,7 +24,7 @@ export default function Logo({
         className
       )}
     >
-      <img src={logoImage} alt="HCMUT Logo" className="h-10 w-auto" />
+      <img src={logoImage} alt="HCMUT Logo" className="h-15 w-auto" />
       {showText && <span className="text-lg">Tutor Support System</span>}
     </Link>
   );

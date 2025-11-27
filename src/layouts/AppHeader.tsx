@@ -48,7 +48,7 @@ const NAV_ITEMS: Record<Role, { label: string; to: string }[]> = {
  * Main application header with navigation
  */
 export default function AppHeader() {
-  const { user, activeRole, signOut } = useAuth();
+  const { user, activeRole, switchRole, signOut } = useAuth();
 
   const navItems = activeRole ? NAV_ITEMS[activeRole] : [];
   const canSwitchRole = (user?.roles.length ?? 0) > 1;
@@ -82,7 +82,11 @@ export default function AppHeader() {
 
         {/* Desktop User Menu */}
         <div className="hidden items-center gap-2 md:flex">
-          <UserMenu canSwitchRole={canSwitchRole} onSignOut={signOut} />
+          <UserMenu
+            canSwitchRole={canSwitchRole}
+            onSwitchRole={switchRole}
+            onSignOut={signOut}
+          />
         </div>
 
         {/* Mobile Menu */}
@@ -90,6 +94,7 @@ export default function AppHeader() {
           <MobileNav
             navItems={navItems}
             canSwitchRole={canSwitchRole}
+            onSwitchRole={switchRole}
             onSignOut={signOut}
           />
         </div>
@@ -104,10 +109,11 @@ export default function AppHeader() {
 
 interface UserMenuProps {
   canSwitchRole: boolean;
+  onSwitchRole: () => void;
   onSignOut: () => void;
 }
 
-function UserMenu({ canSwitchRole, onSignOut }: UserMenuProps) {
+function UserMenu({ canSwitchRole, onSwitchRole, onSignOut }: UserMenuProps) {
   const { user, activeRole } = useAuth();
 
   if (!user) return null;
@@ -142,11 +148,9 @@ function UserMenu({ canSwitchRole, onSignOut }: UserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {canSwitchRole && (
-          <DropdownMenuItem asChild>
-            <NavLink to="/role">
-              <User className="mr-2 h-4 w-4" />
-              Switch Role
-            </NavLink>
+          <DropdownMenuItem onClick={onSwitchRole}>
+            <User className="mr-2 h-4 w-4" />
+            Switch Role
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={onSignOut}>
@@ -165,10 +169,16 @@ function UserMenu({ canSwitchRole, onSignOut }: UserMenuProps) {
 interface MobileNavProps {
   navItems: { label: string; to: string }[];
   canSwitchRole: boolean;
+  onSwitchRole: () => void;
   onSignOut: () => void;
 }
 
-function MobileNav({ navItems, canSwitchRole, onSignOut }: MobileNavProps) {
+function MobileNav({
+  navItems,
+  canSwitchRole,
+  onSwitchRole,
+  onSignOut,
+}: MobileNavProps) {
   const { user, activeRole } = useAuth();
 
   return (
@@ -202,13 +212,13 @@ function MobileNav({ navItems, canSwitchRole, onSignOut }: MobileNavProps) {
           ))}
           <div className="my-4 border-t" />
           {canSwitchRole && (
-            <NavLink
-              to="/role"
+            <button
+              onClick={onSwitchRole}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               <User className="h-4 w-4" />
               Switch Role
-            </NavLink>
+            </button>
           )}
           <button
             onClick={onSignOut}
