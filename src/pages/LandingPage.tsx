@@ -14,6 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import Logo from "@/components/Logo";
 import {
   ArrowRight,
@@ -21,9 +22,12 @@ import {
   GraduationCap,
   LogIn,
   Menu,
+  Moon,
+  Sun,
   Target,
 } from "lucide-react";
-import bannerImage from "@/assets/banner_image_light.jpg";
+import bannerImageLight from "@/assets/banner_image_light.jpg";
+import bannerImageDark from "@/assets/banner_image_dark.jpg";
 
 const FEATURES = [
   {
@@ -61,19 +65,55 @@ const NAV_LINKS = [
 
 export default function LandingPage() {
   const { signIn, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  // Select banner image based on current theme
+  const bannerImage = theme === "dark" ? bannerImageDark : bannerImageLight;
+
+  // Text shadow for legibility on bright backgrounds
+  const textShadow =
+    "0 4px 6px rgba(0, 0, 0, 0.7), 0 2px 4px rgba(0, 0, 0, 0.5)";
 
   return (
     <main className="min-h-screen">
       {/* Glassmorphism Header */}
       <header className="fixed top-0 left-0 right-0 z-50">
         <div
-          className="border-b backdrop-blur-lg"
+          className="relative border-b backdrop-blur-lg"
           style={{
-            background: "rgba(255, 255, 255, 0.7)",
-            borderColor: "rgba(255, 255, 255, 0.3)",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+            background:
+              theme === "dark"
+                ? "rgba(0, 0, 0, 0.4)"
+                : "rgba(255, 255, 255, 0.4)",
+            borderColor:
+              theme === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "rgba(255, 255, 255, 0.3)",
+            boxShadow: `
+              0 8px 32px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 ${
+                theme === "dark"
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(255, 255, 255, 0.5)"
+              },
+              inset 0 -1px 0 ${
+                theme === "dark"
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(255, 255, 255, 0.1)"
+              }
+            `,
           }}
         >
+          {/* Top highlight gradient */}
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{
+              background:
+                theme === "dark"
+                  ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)"
+                  : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)",
+            }}
+          />
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
             <Logo />
 
@@ -90,8 +130,20 @@ export default function LandingPage() {
               ))}
             </nav>
 
-            {/* Desktop Sign In */}
-            <div className="hidden md:block">
+            {/* Desktop Actions */}
+            <div className="hidden items-center gap-2 md:flex">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <Moon className="h-5 w-5" aria-hidden="true" />
+                )}
+              </Button>
               <Button size="sm" onClick={() => signIn()} disabled={loading}>
                 <LogIn className="mr-2 h-4 w-4" />
                 {loading ? "Signing in..." : "Sign In"}
@@ -121,9 +173,21 @@ export default function LandingPage() {
                       </a>
                     ))}
                     <Button
+                      variant="outline"
+                      className="mt-2 w-full justify-start"
+                      onClick={toggleTheme}
+                    >
+                      {theme === "dark" ? (
+                        <Sun className="mr-2 h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Moon className="mr-2 h-4 w-4" aria-hidden="true" />
+                      )}
+                      Toggle theme
+                    </Button>
+                    <Button
                       onClick={() => signIn()}
                       disabled={loading}
-                      className="mt-4"
+                      className="mt-2"
                     >
                       <LogIn className="mr-2 h-4 w-4" />
                       {loading ? "Signing in..." : "Sign In"}
@@ -137,42 +201,54 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section with Banner Image */}
-      <section className="relative px-6 pt-32 pb-24 text-center">
-        {/* Background Image */}
+      <section className="relative isolate overflow-hidden px-6 pt-32 pb-24 text-center">
+        {/* Background Image with blur and brightness */}
         <div
-          className="absolute inset-0 -z-10 bg-cover bg-center"
-          style={{ backgroundImage: `url(${bannerImage})` }}
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundImage: `url(${bannerImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(2px) brightness(1.1)",
+          }}
         />
-        {/* Overlay for readability */}
-        <div className="absolute inset-0 -z-10 bg-black/40" />
 
         <div className="mx-auto max-w-3xl space-y-6">
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
+          <span
+            className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm"
+            style={{ textShadow }}
+          >
             HCMUT Tutor Support System
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl drop-shadow-lg">
+          <h1
+            className="text-4xl font-bold tracking-tight text-white sm:text-5xl"
+            style={{ textShadow }}
+          >
             Elevate learning with guided tutoring at HCMUT
           </h1>
-          <p className="text-lg text-white/90 drop-shadow">
+          <p className="text-lg text-white/90" style={{ textShadow }}>
             Seamless scheduling, expert support, and transparent outcomes for
             students and tutors.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" onClick={() => signIn()} disabled={loading}>
               {loading ? "Signing in..." : "Get Started"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <div className="flex items-center gap-4 text-sm text-white/80">
+            <div
+              className="flex items-center gap-4 text-sm text-white/80"
+              style={{ textShadow }}
+            >
               <a
                 href="#program"
-                className="hover:text-white underline-offset-4 hover:underline"
+                className="underline-offset-4 hover:text-white hover:underline"
               >
                 Program Info
               </a>
               <span className="text-white/40">|</span>
               <a
                 href="#how"
-                className="hover:text-white underline-offset-4 hover:underline"
+                className="underline-offset-4 hover:text-white hover:underline"
               >
                 How It Works
               </a>

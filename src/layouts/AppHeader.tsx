@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { LogOut, Menu, User } from "lucide-react";
+import { LogOut, Menu, Moon, Palette, Sun, User } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
+import { useTheme, AVAILABLE_THEMES } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/auth";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -49,6 +53,7 @@ const NAV_ITEMS: Record<Role, { label: string; to: string }[]> = {
  */
 export default function AppHeader() {
   const { user, activeRole, switchRole, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = activeRole ? NAV_ITEMS[activeRole] : [];
   const canSwitchRole = (user?.roles.length ?? 0) > 1;
@@ -82,6 +87,18 @@ export default function AppHeader() {
 
         {/* Desktop User Menu */}
         <div className="hidden items-center gap-2 md:flex">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Moon className="h-5 w-5" aria-hidden="true" />
+            )}
+          </Button>
           <UserMenu
             canSwitchRole={canSwitchRole}
             onSwitchRole={switchRole}
@@ -115,6 +132,7 @@ interface UserMenuProps {
 
 function UserMenu({ canSwitchRole, onSwitchRole, onSignOut }: UserMenuProps) {
   const { user, activeRole } = useAuth();
+  const { customTheme, setCustomTheme } = useTheme();
 
   if (!user) return null;
 
@@ -124,6 +142,9 @@ function UserMenu({ canSwitchRole, onSwitchRole, onSignOut }: UserMenuProps) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  const currentThemeLabel =
+    AVAILABLE_THEMES.find((t) => t.value === customTheme)?.label || "Default";
 
   return (
     <DropdownMenu>
@@ -137,7 +158,7 @@ function UserMenu({ canSwitchRole, onSwitchRole, onSignOut }: UserMenuProps) {
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col">
             <span>{user.name}</span>
@@ -146,6 +167,24 @@ function UserMenu({ canSwitchRole, onSwitchRole, onSignOut }: UserMenuProps) {
             </span>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Palette className="mr-2 h-4 w-4" aria-hidden="true" />
+            <span>Theme: {currentThemeLabel}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
+            {AVAILABLE_THEMES.map((themeOption) => (
+              <DropdownMenuItem
+                key={themeOption.value}
+                onClick={() => setCustomTheme(themeOption.value)}
+                className={cn(customTheme === themeOption.value && "bg-accent")}
+              >
+                {themeOption.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         {canSwitchRole && (
           <DropdownMenuItem onClick={onSwitchRole}>
@@ -180,6 +219,7 @@ function MobileNav({
   onSignOut,
 }: MobileNavProps) {
   const { user, activeRole } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <Sheet>
@@ -211,6 +251,17 @@ function MobileNav({
             </NavLink>
           ))}
           <div className="my-4 border-t" />
+          <button
+            onClick={toggleTheme}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            Toggle Theme
+          </button>
           {canSwitchRole && (
             <button
               onClick={onSwitchRole}
